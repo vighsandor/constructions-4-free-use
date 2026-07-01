@@ -1,0 +1,50 @@
+# JSON fájlok védelme - közvetlen hozzáférés letiltva
+<FilesMatch "\.(json|tar\.gz)$">
+    Require all denied
+</FilesMatch>
+
+# Backup könyvtár védelme
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteRule ^backups/ - [F,L]
+</IfModule>
+
+# API rewrite szabályok
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^(.*)$ index.html [L,QSA]
+</IfModule>
+
+# Cache tiltása
+<IfModule mod_headers.c>
+    Header set Cache-Control "no-cache, no-store, must-revalidate, max-age=0"
+    Header set Pragma "no-cache"
+    Header set Expires 0
+    
+    # API végpontok külön cache mentesen
+    <FilesMatch "\.php$">
+        Header unset ETag
+        Header set Cache-Control "max-age=0, no-cache, no-store, must-revalidate"
+    </FilesMatch>
+</IfModule>
+
+# Alapértelmezett index
+DirectoryIndex index.html
+
+# Biztonsági fejlécek
+<IfModule mod_headers.c>
+    Header set X-Content-Type-Options "nosniff"
+    Header set X-Frame-Options "SAMEORIGIN"
+    Header set X-XSS-Protection "1; mode=block"
+</IfModule>
+
+# PHP hibák elrejtése
+<IfModule mod_php.c>
+    php_flag display_errors Off
+    php_flag log_errors On
+</IfModule>
+
+# Karakterkódolás
+AddDefaultCharset UTF-8

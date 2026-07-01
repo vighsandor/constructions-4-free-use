@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CYBER-TODO v1.2.1</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <div class="app-wrapper">
+
+    <!-- ── Header ── -->
+    <header class="app-header">
+      <div class="header-left">
+        <h1 class="app-title">
+          <span class="title-bracket">[</span>
+          <span class="title-icon">◈</span>
+          <span class="title-text">CYBER<span class="title-dash">-</span>TODO</span>
+          <span class="title-bracket">]</span>
+        </h1>
+        <span class="version-badge">v1.2.1</span>
+        <span class="task-counter" id="taskCounter">&gt; 0 aktív feladat</span>
+      </div>
+      <div class="header-right">
+        <button class="btn-icon" id="telegramBtn" title="Telegram értesítések konfigurálása">⚡</button>
+      </div>
+    </header>
+
+    <main class="app-main">
+
+      <!-- ── Add Task ── -->
+      <section class="add-task-section cyber-panel">
+        <div class="panel-label">// ÚJ FELADAT RÖGZÍTÉSE</div>
+        <form id="addTaskForm" class="add-task-form">
+          <input
+            type="text"
+            id="taskInput"
+            class="task-input"
+            placeholder="&gt; feladat megadása..."
+            maxlength="200"
+            autocomplete="off"
+          />
+          <div class="task-meta">
+            <select id="taskPriority" class="select-field">
+              <option value="low">● ALACSONY</option>
+              <option value="medium" selected>● KÖZEPES</option>
+              <option value="high">● MAGAS</option>
+            </select>
+            <select id="taskCategory" class="select-field">
+              <option value="personal">SZEMÉLYES</option>
+              <option value="work">MUNKA</option>
+              <option value="shopping">BEVÁSÁRLÁS</option>
+              <option value="health">EGÉSZSÉG</option>
+              <option value="other">EGYÉB</option>
+            </select>
+            <input type="date" id="taskDueDate" class="select-field" title="Határidő" />
+            <button type="submit" class="btn-add">+ HOZZÁAD</button>
+          </div>
+        </form>
+      </section>
+
+      <!-- ── Controls ── -->
+      <section class="controls-section">
+        <div class="search-wrap">
+          <span class="search-icon">&gt;</span>
+          <input
+            type="text"
+            id="searchInput"
+            class="search-input"
+            placeholder="KERESÉS..."
+          />
+        </div>
+        <div class="filter-tabs">
+          <button class="filter-tab active" data-filter="all">ÖSSZES</button>
+          <button class="filter-tab" data-filter="active">AKTÍV</button>
+          <button class="filter-tab" data-filter="completed">KÉSZ</button>
+        </div>
+        <div class="sort-wrap">
+          <select id="sortSelect" class="select-field">
+            <option value="created">LÉTREHOZÁS</option>
+            <option value="priority">PRIORITÁS</option>
+            <option value="dueDate">HATÁRIDŐ</option>
+            <option value="alpha">ABC</option>
+          </select>
+        </div>
+      </section>
+
+      <!-- ── Category filter ── -->
+      <section class="category-filter" id="categoryFilter">
+        <button class="cat-btn active" data-category="all">ÖSSZES</button>
+        <button class="cat-btn" data-category="personal">SZEMÉLYES</button>
+        <button class="cat-btn" data-category="work">MUNKA</button>
+        <button class="cat-btn" data-category="shopping">BEVÁSÁRLÁS</button>
+        <button class="cat-btn" data-category="health">EGÉSZSÉG</button>
+        <button class="cat-btn" data-category="other">EGYÉB</button>
+      </section>
+
+      <!-- ── Stats bar ── -->
+      <section class="stats-bar cyber-panel">
+        <div class="stat-item">
+          <span class="stat-value" id="statTotal">0</span>
+          <span class="stat-label">ÖSSZES</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-value" id="statActive">0</span>
+          <span class="stat-label">AKTÍV</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-value" id="statCompleted">0</span>
+          <span class="stat-label">KÉSZ</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-value" id="statOverdue">0</span>
+          <span class="stat-label">LEJÁRT</span>
+        </div>
+      </section>
+
+      <!-- ── Task list ── -->
+      <section class="task-list-section">
+        <ul class="task-list" id="taskList"></ul>
+        <div class="empty-state" id="emptyState" style="display:none">
+          <span class="empty-icon">◈</span>
+          <p>&gt; NINCS MEGJELENÍTHETŐ FELADAT_</p>
+        </div>
+      </section>
+
+      <!-- ── Bulk actions ── -->
+      <section class="bulk-actions" id="bulkActions" style="display:none">
+        <button class="btn-bulk" id="completeAll">✓ ÖSSZES TELJESÍTÉSE</button>
+        <button class="btn-bulk danger" id="clearCompleted">✕ KÉSZ TÖRLÉSE</button>
+        <button class="btn-bulk danger" id="clearAll">✕ ÖSSZES TÖRLÉSE</button>
+      </section>
+
+    </main>
+
+    <!-- ── Edit Modal ── -->
+    <div class="modal-overlay" id="modalOverlay" style="display:none">
+      <div class="modal cyber-panel" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+        <div class="panel-label">// FELADAT SZERKESZTÉSE</div>
+        <h2 class="modal-title" id="modalTitle">SZERKESZTÉS</h2>
+        <form id="editForm">
+          <div class="form-group">
+            <label for="editTaskInput">FELADAT</label>
+            <input type="text" id="editTaskInput" class="task-input" maxlength="200" />
+          </div>
+          <div class="form-group">
+            <label for="editNotes">MEGJEGYZÉS</label>
+            <textarea id="editNotes" class="notes-input" rows="3" placeholder="&gt; részletek..."></textarea>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="editPriority">PRIORITÁS</label>
+              <select id="editPriority" class="select-field">
+                <option value="low">ALACSONY</option>
+                <option value="medium">KÖZEPES</option>
+                <option value="high">MAGAS</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="editCategory">KATEGÓRIA</label>
+              <select id="editCategory" class="select-field">
+                <option value="personal">SZEMÉLYES</option>
+                <option value="work">MUNKA</option>
+                <option value="shopping">BEVÁSÁRLÁS</option>
+                <option value="health">EGÉSZSÉG</option>
+                <option value="other">EGYÉB</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="editDueDate">HATÁRIDŐ</label>
+              <input type="date" id="editDueDate" class="select-field" />
+            </div>
+          </div>
+          <div class="modal-actions">
+            <button type="button" class="btn-secondary" id="cancelEdit">MÉGSE</button>
+            <button type="submit" class="btn-primary">MENTÉS</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- ── Telegram Settings Modal ── -->
+    <div class="modal-overlay" id="telegramModal" style="display:none">
+      <div class="modal cyber-panel telegram-modal" role="dialog" aria-modal="true" aria-labelledby="tgModalTitle">
+        <div class="panel-label">// TELEGRAM ÉRTESÍTÉSI KONFIGURÁCIÓ</div>
+        <h2 class="modal-title" id="tgModalTitle">⚡ TELEGRAM CONFIG</h2>
+
+        <div class="tg-enable-row">
+          <label class="toggle-label">
+            <input type="checkbox" id="tgEnabled" class="toggle-input" />
+            <span class="toggle-track"><span class="toggle-thumb"></span></span>
+            <span class="toggle-text">ÉRTESÍTÉSEK ENGEDÉLYEZÉSE</span>
+          </label>
+        </div>
+
+        <div class="form-group">
+          <label for="tgBotToken">BOT TOKEN</label>
+          <input
+            type="password"
+            id="tgBotToken"
+            class="task-input"
+            placeholder="&gt; 123456789:ABCdef..."
+            autocomplete="off"
+          />
+          <span class="field-hint">// BotFather által generált token</span>
+        </div>
+
+        <div class="form-group">
+          <label for="tgChatId">CHAT ID</label>
+          <input
+            type="text"
+            id="tgChatId"
+            class="task-input"
+            placeholder="&gt; -1001234567890"
+            autocomplete="off"
+          />
+          <span class="field-hint">// Felhasználó vagy csoport azonosítója</span>
+        </div>
+
+        <div class="tg-notify-options">
+          <div class="panel-label" style="margin-bottom:8px">// ÉRTESÍTÉSI ESEMÉNYEK</div>
+          <label class="checkbox-label">
+            <input type="checkbox" id="tgOnAdd" class="cyber-checkbox" />
+            <span class="cb-box"></span>
+            <span>Feladat hozzáadásakor</span>
+          </label>
+          <label class="checkbox-label">
+            <input type="checkbox" id="tgOnComplete" class="cyber-checkbox" />
+            <span class="cb-box"></span>
+            <span>Feladat teljesítésekor / visszaállításakor</span>
+          </label>
+          <label class="checkbox-label">
+            <input type="checkbox" id="tgOnDelete" class="cyber-checkbox" />
+            <span class="cb-box"></span>
+            <span>Feladat törlésekor</span>
+          </label>
+          <label class="checkbox-label">
+            <input type="checkbox" id="tgOnOverdue" class="cyber-checkbox" />
+            <span class="cb-box"></span>
+            <span>Lejárt feladatok napi összesítője</span>
+          </label>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn-secondary" id="tgTest">⚡ TESZT ÜZENET</button>
+          <button type="button" class="btn-secondary" id="cancelTelegram">MÉGSE</button>
+          <button type="button" class="btn-primary" id="saveTelegram">MENTÉS</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Toast container ── -->
+    <div class="toast-container" id="toastContainer"></div>
+
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

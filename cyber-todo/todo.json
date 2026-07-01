@@ -1,0 +1,13 @@
+{
+  "tasks": [],
+  "telegram": {
+    "enabled": false,
+    "botToken": "",
+    "chatId": "",
+    "onAdd": true,
+    "onComplete": true,
+    "onDelete": false,
+    "onOverdue": true
+  },
+  "version": "1.2.1"
+}
